@@ -132,11 +132,12 @@
 <div id="sourceModal">
   <h2>📜 Source Code</h2>
   <pre>
-(function(){
+((function() {
   if (window.__adSkipperActive) {
-    console.log("Ad skipper already running!");
+    alert('Ad skipper is already running...');
     return;
   }
+
   window.__adSkipperActive = true;
 
   let video = document.querySelector('video');
@@ -145,6 +146,9 @@
     return;
   }
 
+  let originalPlaybackRate = video.playbackRate;
+  let originalMuted = video.muted;
+  let adjustplayed = false;
   let overlay = document.createElement('div');
   overlay.textContent = 'Ad is being skipped, please hold...';
   Object.assign(overlay.style, {
@@ -164,23 +168,26 @@
   });
   document.body.appendChild(overlay);
 
-  function checkAd() {
-    const adContainer = document.querySelector('.ad-showing');
-    if (adContainer) {
+  setInterval(function() {
+    if (document.querySelector('.ad-showing')) {
       video.playbackRate = 16;
       video.muted = true;
       overlay.style.display = 'block';
       console.log('[Ad Skipper] Ad detected: Speeding up and muting...');
+      adjustplayed = true
     } else {
-      video.playbackRate = 1;
-      video.muted = false;
+      if (!adjustplayed) {
+        originalPlaybackRate = video.playbackRate;
+        originalMuted = video.muted
+      }
+      video.playbackRate = originalPlaybackRate;
+      video.muted = originalMuted;
       overlay.style.display = 'none';
-      console.log('[Ad Skipper] No ad: Normal speed and unmuted.');
+      console.log('[Ad Skipper] No ad: Restoring original settings.');
+      adjustplayed = false;
     }
-  }
-
-  setInterval(checkAd, 500);
-})();
+  }, 500);
+})();)();
   </pre>
   <button id="closeSource" onclick="document.getElementById('sourceModal').style.display='none'">Close</button>
 </div>
